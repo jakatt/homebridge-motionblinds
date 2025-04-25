@@ -1,0 +1,13 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "extends": [
+    "plugin:@typescript-eslint/recommended" // Optional: Start with recommended rules
+  ],
+  "rules": {
+    "max-len": "off" // Keep the max-len rule disabled
+    // Add any other project-specific rule overrides here if needed
+  }
+}

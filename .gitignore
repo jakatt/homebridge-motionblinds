@@ -118,3 +118,18 @@ dist
 .yarn/unplugged
 .yarn/build-state.yml
 .pnp.*
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE / Editor directories #
+############################
+.vscode/
+.idea/

@@ -50,23 +50,28 @@ export class MotionBlindsPlatform implements DynamicPlatformPlugin {
     public readonly config: PlatformConfig,
     public readonly api: API,
   ) {
-    this.log.info('Initializing MotionBlindsPlatform...'); // Log platform init start
+    this.log.info('Initializing MotionBlindsPlatform...') // Log platform init start
 
     // Load any configured blinds into a map
     if (Array.isArray(this.config.blinds)) {
-      this.log.info(`Found ${this.config.blinds.length} blind configurations in config.json`);
+      this.log.info(`Found ${this.config.blinds.length} blind configurations in config.json`)
       for (const entry of this.config.blinds) {
         if (typeof entry.mac !== 'string') {
           this.log.error('Blinds config entry is missing "mac", ignoring')
         } else {
-          const macLower = entry.mac.toLowerCase(); // Convert MAC to lowercase
+          const macLower = entry.mac.toLowerCase() // Convert MAC to lowercase
           // Log the exact configuration being stored for each blind
-          this.log.info(`Loading config for MAC: ${macLower} (Original: ${entry.mac}), Name: ${entry.name}, Invert: ${entry.invert}, Tilt: ${entry.tilt}, PollInterval: ${entry.pollInterval}, LowBattery: ${entry.lowBatteryThreshold}, IsBatteryPowered: ${entry.isBatteryPowered}`); // Log new option
+          this.log.info(
+            `Loading config for MAC: ${macLower} (Original: ${entry.mac}), ` +
+            `Name: ${entry.name}, Invert: ${entry.invert}, Tilt: ${entry.tilt}, ` +
+            `PollInterval: ${entry.pollInterval}, LowBattery: ${entry.lowBatteryThreshold}, ` +
+            `IsBatteryPowered: ${entry.isBatteryPowered}`,
+          ) // Log new option
           this.blindConfigs.set(macLower, entry) // Use lowercase MAC as key
         }
       }
     } else {
-      this.log.warn('No "blinds" array found in config.json. Blinds must be configured manually.');
+      this.log.warn('No "blinds" array found in config.json. Blinds must be configured manually.')
     }
 
     this.gateway = new MotionGateway({ key: config.key, gatewayIp: config.gatewayIp })
