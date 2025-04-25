@@ -8,59 +8,68 @@
       "name": {
         "title": "Name",
         "type": "string",
-        "required": true,
-        "default": "MOTION Blinds"
+        "default": "MOTION Blinds",
+        "required": true
       },
       "key": {
-        "title": "Key",
-        "description": "Key acquired from the MOTION app, has the format xxxxxxxx-xxxx-xx",
+        "title": "Gateway Key",
         "type": "string",
-        "minLength": 16,
-        "maxLength": 16,
-        "required": false
+        "description": "The 16-character key printed on the bottom of the MOTION gateway/bridge.",
+        "required": true
       },
       "gatewayIp": {
-        "title": "Gateway IP",
-        "description": "IP address of the MOTION gateway",
+        "title": "Gateway IP Address (Optional)",
         "type": "string",
-        "format": "ipv4",
-        "required": false
+        "description": "Specify the gateway IP address to skip discovery. Useful for complex network setups."
       },
       "blinds": {
-        "type": "array",
         "title": "Blinds",
-        "description": "Override per blind settings such as name",
-        "required": false,
+        "type": "array",
+        "description": "Configure individual blinds.",
         "items": {
           "type": "object",
-          "title": "Blind",
-          "description": "Blind to override settings for",
           "properties": {
             "mac": {
               "title": "MAC Address",
               "type": "string",
-              "minLength": 16,
-              "maxLength": 16,
-              "required": true,
-              "description": "16-character unique identifier for this window covering"
+              "description": "The MAC address of the blind (e.g., F4CFA2ABAAA40001).",
+              "required": true
             },
             "name": {
+              "title": "Name",
               "type": "string",
-              "title": "Blind Name",
-              "required": false,
-              "description": "Name of the window covering as it will appear in HomeKit."
+              "description": "The name for this blind in HomeKit.",
+              "required": true
             },
             "tilt": {
+              "title": "Enable Tilt Control",
               "type": "boolean",
-              "title": "Support Tilt Angle",
-              "required": false,
-              "description": "Enable tilt angle control for this window covering"
+              "default": false,
+              "description": "Enable horizontal/vertical tilt control if the blind supports it."
             },
             "invert": {
+              "title": "Invert Position",
               "type": "boolean",
-              "title": "Invert Window Orientation",
-              "required": false,
-              "description": "Swap up for down or left for right in this window coverings orientation"
+              "default": false,
+              "description": "Invert the position values (0=Open, 100=Closed)."
+            },
+            "pollInterval": {
+              "title": "Polling Interval (ms)",
+              "type": "integer",
+              "description": "The interval in milliseconds to poll the status of the blinds.",
+              "default": 60000
+            },
+            "lowBatteryThreshold": {
+              "title": "Low Battery Threshold (%)",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Battery percentage below which the low battery status is triggered. Default: 20."
+            },
+            "isBatteryPowered": {
+              "title": "Is Battery Powered",
+              "type": "boolean",
+              "description": "Explicitly set if the blind is battery powered. Overrides automatic detection. Leave unset to auto-detect (may be unreliable). Set to 'false' for mains-powered blinds reporting incorrect voltage."
             }
           }
         }

@@ -8,7 +8,7 @@ import {
   LimitsState,
   MotionGateway,
   Operation,
-  VoltageMode,
+  VoltageMode, // Ensure VoltageMode is imported
   WirelessMode,
 } from 'motionblinds'
 
@@ -35,7 +35,7 @@ function IsVerticalBlind(blindType: BlindType) {
 
 export class MotionBlindsAccessory {
   private service: Service
-  private battery: Service
+  private battery: Service | undefined // Make battery service optional
   private config: BlindAccessoryConfig
 
   constructor(
@@ -178,26 +178,51 @@ export class MotionBlindsAccessory {
        }
     }
 
-    // --- Battery Service ---
-    this.battery =
-      this.accessory.getService(this.platform.Service.Battery) ?? // Use standard Battery service
-      this.accessory.addService(this.platform.Service.Battery, 'Battery', `${this.mac}-Battery`); // Unique subtype
+    // --- Battery Service (Conditional based on config override OR voltageMode) ---
+    let isBatteryPowered: boolean;
+    if (this.config.isBatteryPowered !== undefined) {
+        // Use the explicit config setting if provided
+        isBatteryPowered = this.config.isBatteryPowered;
+        this.platform.log.debug(`[${this.mac}] Using explicit config isBatteryPowered=${isBatteryPowered}`);
+    } else {
+        // Fallback to voltageMode check if config setting is missing
+        isBatteryPowered = this.status.voltageMode === 0;
+        this.platform.log.warn(`[${this.mac}] Config option 'isBatteryPowered' not set. Falling back to voltageMode check (voltageMode=${this.status.voltageMode}, assuming isBatteryPowered=${isBatteryPowered}). Consider setting 'isBatteryPowered' in config.json for reliability.`);
+    }
 
-    this.battery
-      .getCharacteristic(this.platform.Characteristic.StatusLowBattery)
-      .onGet(() => { // Use modern onGet
-         const status = this.batteryStatus(this.status);
-         this.platform.log.debug(`<- get StatusLowBattery (${this.mac}): ${status}`);
-         return status;
-      });
+    this.platform.log.debug(`[${this.mac}] Checking power source: isBatteryPowered=${isBatteryPowered}`); // Log final decision
 
-    this.battery
-      .getCharacteristic(this.platform.Characteristic.BatteryLevel)
-      .onGet(() => { // Use modern onGet
-         const level = this.batteryLevel(this.status);
-         this.platform.log.debug(`<- get BatteryLevel (${this.mac}): ${level}`);
-         return level;
-      });
+    if (isBatteryPowered) {
+        this.platform.log.info(`[${this.mac}] Blind is configured or detected as battery powered. Adding Battery service.`);
+        this.battery =
+          this.accessory.getService(this.platform.Service.Battery) ??
+          this.accessory.addService(this.platform.Service.Battery, 'Battery', `${this.mac}-Battery`);
+
+        this.battery
+          .getCharacteristic(this.platform.Characteristic.StatusLowBattery)
+          .onGet(() => {
+             const status = this.batteryStatus(this.status);
+             this.platform.log.debug(`<- get StatusLowBattery (${this.mac}): ${status}`);
+             return status;
+          });
+
+        this.battery
+          .getCharacteristic(this.platform.Characteristic.BatteryLevel)
+          .onGet(() => {
+             const level = this.batteryLevel(this.status);
+             this.platform.log.debug(`<- get BatteryLevel (${this.mac}): ${level}`);
+             return level;
+          });
+    } else {
+        this.platform.log.info(`[${this.mac}] Blind is configured or detected as mains powered. Removing existing Battery service if present.`);
+        // If not battery powered, try to remove any existing battery service
+        const existingBatteryService = this.accessory.getService(this.platform.Service.Battery);
+        if (existingBatteryService) {
+            this.accessory.removeService(existingBatteryService);
+            this.platform.log.debug(`[${this.mac}] Removed Battery service.`);
+        }
+        this.battery = undefined; // Ensure battery service reference is undefined
+    }
 
     // --- Polling ---
     // Allow polling interval configuration, default to 30s, 0 disables
@@ -381,19 +406,28 @@ export class MotionBlindsAccessory {
       }
     }
 
-    // Update Battery Level if changed or initial update
-    if (newBatteryLevel !== prevBatteryLevel || isInitialUpdate) {
-      this.platform.log.debug(`$ BatteryLevel (${this.mac}) ${prevBatteryLevel} -> ${newBatteryLevel}`);
-      this.battery.updateCharacteristic(this.platform.Characteristic.BatteryLevel, newBatteryLevel);
-    }
+    // Update Battery Level and Status only if the battery service exists
+    if (this.battery) {
+        // Update Battery Level if changed or initial update
+        if (newBatteryLevel !== prevBatteryLevel || isInitialUpdate) {
+          this.platform.log.debug(`$ BatteryLevel (${this.mac}) ${prevBatteryLevel} -> ${newBatteryLevel}`);
+          this.battery.updateCharacteristic(this.platform.Characteristic.BatteryLevel, newBatteryLevel);
+        }
 
-    // Update Battery Status if changed or initial update
-    if (newBatteryStatus !== prevBatteryStatus || isInitialUpdate) {
-      this.platform.log.debug(`$ StatusLowBattery (${this.mac}) ${prevBatteryStatus} -> ${newBatteryStatus}`);
-      this.battery.updateCharacteristic(
-        this.platform.Characteristic.StatusLowBattery,
-        newBatteryStatus,
-      );
+        // Update Battery Status if changed or initial update
+        if (newBatteryStatus !== prevBatteryStatus || isInitialUpdate) {
+          this.platform.log.debug(`$ StatusLowBattery (${this.mac}) ${prevBatteryStatus} -> ${newBatteryStatus}`);
+          this.battery.updateCharacteristic(
+            this.platform.Characteristic.StatusLowBattery,
+            newBatteryStatus,
+          );
+        }
+    } else {
+        // If battery service doesn't exist, ensure no battery info is logged as being updated
+        // Log only if it's not the initial update to avoid spamming logs
+        if (!isInitialUpdate) {
+            this.platform.log.debug(`[${this.mac}] Skipping battery updates as blind is not battery powered.`);
+        }
     }
 
     // Update the stored status context *after* comparisons and updates

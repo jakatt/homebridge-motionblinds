@@ -19,6 +19,7 @@ export type BlindAccessoryConfig = {
   invert?: boolean
   pollInterval?: number // Add optional pollInterval
   lowBatteryThreshold?: number // Add optional lowBatteryThreshold
+  isBatteryPowered?: boolean // Add optional flag to override voltageMode check
 }
 
 export type BlindAccessoryContext = {
@@ -60,7 +61,7 @@ export class MotionBlindsPlatform implements DynamicPlatformPlugin {
         } else {
           const macLower = entry.mac.toLowerCase(); // Convert MAC to lowercase
           // Log the exact configuration being stored for each blind
-          this.log.info(`Loading config for MAC: ${macLower} (Original: ${entry.mac}), Name: ${entry.name}, Invert: ${entry.invert}, Tilt: ${entry.tilt}, PollInterval: ${entry.pollInterval}, LowBattery: ${entry.lowBatteryThreshold}`);
+          this.log.info(`Loading config for MAC: ${macLower} (Original: ${entry.mac}), Name: ${entry.name}, Invert: ${entry.invert}, Tilt: ${entry.tilt}, PollInterval: ${entry.pollInterval}, LowBattery: ${entry.lowBatteryThreshold}, IsBatteryPowered: ${entry.isBatteryPowered}`); // Log new option
           this.blindConfigs.set(macLower, entry) // Use lowercase MAC as key
         }
       }
