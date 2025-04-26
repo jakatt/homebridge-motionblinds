@@ -6,10 +6,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git://github.com/jhurliman/homebridge-motionblinds.git"
+    "url": "git://github.com/jakatt/homebridge-motionblinds.git"
   },
   "bugs": {
-    "url": "https://github.com/jhurliman/homebridge-motionblinds/issues"
+    "url": "https://github.com/jakatt/homebridge-motionblinds/issues"
   },
   "engines": {
     "node": ">=10.17.0",
