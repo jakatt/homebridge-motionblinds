@@ -38,8 +38,9 @@ All fields are optional except `"platform"`, and `"mac"` if any blinds are speci
       "mac": "xxxxxxxxxxxxxxxx",
       "name": "Living Room Roller Shade",
       "tilt": false,
-      "invert": false
-      // pollInterval, lowBatteryThreshold, isBatteryPowered will use defaults if omitted
+      "invert": false,
+      "pollInterval": 60000, // Optional: Poll status every 60 seconds (default)
+      "isBatteryPowered": false // Optional: Explicitly set if battery powered (overrides auto-detect)
     }
   ]
 }
