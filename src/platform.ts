@@ -36,8 +36,8 @@ export type BlindAccessoryContext = {
  * parse the user config and discover/register accessories with Homebridge.
  */
 export class MotionBlindsPlatform implements DynamicPlatformPlugin {
-  public readonly Service: typeof Service = this.api.hap.Service
-  public readonly Characteristic: typeof Characteristic = this.api.hap.Characteristic
+  public readonly Service: typeof Service
+  public readonly Characteristic: typeof Characteristic
 
   public readonly accessories: PlatformAccessory[] = []
   public readonly blindConfigs = new Map<string, BlindAccessoryConfig>()
@@ -50,6 +50,9 @@ export class MotionBlindsPlatform implements DynamicPlatformPlugin {
     public readonly config: PlatformConfig,
     public readonly api: API,
   ) {
+    this.Service = this.api.hap.Service
+    this.Characteristic = this.api.hap.Characteristic
+    
     this.log.info('Initializing MotionBlindsPlatform...') // Log platform init start
 
     // Load any configured blinds into a map
