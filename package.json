@@ -1,6 +1,6 @@
 {
   "displayName": "MOTION Blinds",
-  "name": "homebridge-motionblinds",
+  "name": "@jakatt/homebridge-motionblinds",
   "version": "2.0.1",
   "description": "Homebridge plugin to control MOTION Blinds by Coulisse B.V. including derivative products such as OmniaBlinds.",
   "license": "MIT",
@@ -20,7 +20,7 @@
     "lint": "eslint src/**.ts --max-warnings=0",
     "watch": "yarn run build && yarn link && nodemon",
     "build": "rimraf ./dist && tsc",
-    "prepublishOnly": "yarn run lint && yarn run build"
+    "prepublishOnly": "npm run lint && npm run build"
   },
   "keywords": [
     "homebridge-plugin"
