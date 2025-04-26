@@ -38,9 +38,7 @@ export class MotionBlindsAccessory {
     private readonly platform: MotionBlindsPlatform,
     private readonly accessory: PlatformAccessory<BlindAccessoryContext>,
   ) {
-    // Restore original config retrieval logic
     this.config = this.platform.blindConfigs.get(this.mac.toLowerCase()) ?? { mac: this.mac }
-    // Remove extra logging
 
     const accessoryInfoService = this.accessory
       .getService(this.platform.Service.AccessoryInformation);
@@ -65,21 +63,21 @@ export class MotionBlindsAccessory {
     // --- CurrentPosition Getter ---
     this.service
       .getCharacteristic(this.platform.Characteristic.CurrentPosition)
-      .onGet(() => { // Use modern onGet
+      .onGet(() => {
         const currentPosition = this.status.currentPosition
         const homekitPosition = this.config.invert ? (100 - currentPosition) : currentPosition
         this.platform.log.debug(
           `<- get CurrentPosition (${this.mac}): blind=${currentPosition}, hk=${homekitPosition} (inverted=${!!this.config.invert})`,
-        ) // Keep original debug log
+        )
         return homekitPosition
       })
 
     // --- PositionState Getter ---
     this.service
       .getCharacteristic(this.platform.Characteristic.PositionState)
-      .onGet(() => { // Use modern onGet
+      .onGet(() => {
         const state = this.positionState(this.status)
-        this.platform.log.debug(`<- get PositionState (${this.mac}): ${state}`) // Keep original debug log
+        this.platform.log.debug(`<- get PositionState (${this.mac}): ${state}`)
         return state
       })
 
@@ -88,21 +86,21 @@ export class MotionBlindsAccessory {
       // --- TargetPosition Getter & Setter ---
       this.service
         .getCharacteristic(this.platform.Characteristic.TargetPosition)
-        .onGet(() => { // Use modern onGet
+        .onGet(() => {
           // Target position should also be inverted for HomeKit display consistency if needed
           // We store the HomeKit target position in context
           const targetPosition = this.accessory.context.targetPosition ?? this.getCurrentHomeKitPosition()
-          this.platform.log.debug(`<- get TargetPosition (${this.mac}): ${targetPosition}`) // Keep original debug log
+          this.platform.log.debug(`<- get TargetPosition (${this.mac}): ${targetPosition}`)
           return targetPosition
         })
-        .onSet(async (value) => { // Use modern onSet with async
+        .onSet(async (value) => {
           const targetPosition = value as number // HomeKit position (0=Closed, 100=Open)
           const effectiveTarget = this.config.invert ? (100 - targetPosition) : targetPosition
           // Store the HomeKit target position in context
           this.accessory.context.targetPosition = targetPosition
           this.platform.log.debug(
             `-> set TargetPosition (${this.mac}): hk=${targetPosition}, blind=${effectiveTarget} (inverted=${!!this.config.invert})`,
-          ) // Keep original debug log
+          )
           try {
             await this.platform.gateway
               .writeDevice(this.mac, this.deviceType, { targetPosition: effectiveTarget })
@@ -118,7 +116,7 @@ export class MotionBlindsAccessory {
       // --- HoldPosition Setter ---
       this.service
         .getCharacteristic(this.platform.Characteristic.HoldPosition)
-        .onSet(async () => { // Use modern onSet with async
+        .onSet(async () => {
           // This characteristic is write-only (value is always true when set)
           this.platform.log.debug(`-> set HoldPosition (${this.mac})`)
           try {
@@ -251,7 +249,7 @@ export class MotionBlindsAccessory {
 
     // --- Polling ---
     // Allow polling interval configuration, default to 30s, 0 disables
-    const pollInterval = this.config.pollInterval ?? 30000
+    const pollInterval = this.config.pollInterval ?? 60000 // Changed default to 60000ms (60s)
     if (pollInterval > 0) {
       setInterval(() => {
         this.platform.log.debug(`-> Polling readDevice(${this.mac}, ${this.deviceType})`)
@@ -291,7 +289,6 @@ export class MotionBlindsAccessory {
 
   // --- Getters for context properties ---
   get mac() {
-    // Remove extra logging
     return this.accessory.context.mac ?? ''
   }
 
@@ -362,7 +359,6 @@ export class MotionBlindsAccessory {
         calculatedState = STOPPED
         break
     }
-    // Remove extra logging
     return calculatedState
   }
 
@@ -385,7 +381,6 @@ export class MotionBlindsAccessory {
     const prevBatteryLevel = this.batteryLevel(prevStatus)
     const prevBatteryStatus = this.batteryStatus(prevStatus)
 
-    // Restore original logging level
     this.platform.log.debug(`Updating accessory ${this.mac} (inverted=${isInverted})`)
     this.platform.log.debug(
       `  Blind Status: pos=${newStatus.currentPosition}, angle=${newStatus.currentAngle}, ` +
