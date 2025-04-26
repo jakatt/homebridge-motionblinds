@@ -40,11 +40,21 @@ All fields are optional except `"platform"`, and `"mac"` if any blinds are speci
       "tilt": false,
       "invert": false,
       "pollInterval": 60000, // Optional: Poll status every 60 seconds (default)
-      "isBatteryPowered": false // Optional: Explicitly set if battery powered (overrides auto-detect)
+      "isBatteryPowered": false // Optional: Set to false for grid-powered blinds
     }
   ]
 }
 ```
+
+## Plugin Improvements
+
+This version of the plugin includes several important improvements over the original:
+
+1. **Fixed Invert Mode**: Corrected erratic behavior when using the `invert` option, ensuring consistent operation.
+2. **Improved HomeKit Status Updates**: Fixed inconsistencies in status reporting to Apple HomeKit.
+3. **Better Power Source Management**: Proper handling of grid-powered blinds vs. battery-powered blinds.
+   - For grid-powered blinds, set `"isBatteryPowered": false` to remove the battery service from HomeKit.
+   - For battery-powered blinds, set `"isBatteryPowered": true` or leave unspecified for auto-detection.
 
 **Configuration Options:**
 
